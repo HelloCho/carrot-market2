@@ -6,17 +6,99 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  name String
-  phone Int? @unique
-  email String? @unique
-  avatar String?
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String?  @unique
+  email     String?  @unique
+  avatar    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  tokens  Token[]
+  products Product[]
+  favs Fav[]
+  posts Post[]
+  answers Answer[]
+  wonderings Wondering[]
+}
+
+model Token {
+  id        Int      @id @default(autoincrement())
+  payload   String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Product {
+  id     Int  @id @default(autoincrement())
+  image  String 
+  name String
+  price Int
+  description String @db.MediumText
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId])
+
+  favs Fav[]
+}
+
+model Fav {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId Int
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId])
+  @@index([productId])
+}
+
+model Post {
+  id     Int  @id @default(autoincrement())
+  question String @db.MediumText
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  @@index([userId])
+  answers Answer[]
+  wonderings Wondering[]
+}
+
+model Answer {
+  id     Int  @id @default(autoincrement())
+  comment String @db.MediumText
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId Int
+  @@index([userId])
+  @@index([postId])
+}
+
+model Wondering {
+  id     Int  @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId Int
+  @@index([userId])
+  @@index([postId])
 }
